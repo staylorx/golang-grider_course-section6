@@ -9,6 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type logWriter struct{}
+
 func main() {
 	res, err := http.Get("http://www.google.com/robots.txt")
 	if err != nil {
@@ -16,7 +18,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// An easy way
 	body, err := io.ReadAll(res.Body)
+
+	// A *hard* way
+	// bs := make([]byte, 99999)
+	// res.Body.Read(bs)
+	// body := string(bs)
+
 	res.Body.Close()
 
 	if res.StatusCode > 299 {
@@ -28,6 +37,12 @@ func main() {
 	}
 
 	fmt.Printf("%s", body)
+}
+
+// Custom logWriter that implements the Write inteface
+func (logWriter) Write(bs []byte) (int, error) {
+	log.Info(string(bs))
+	return len(bs), nil
 }
 
 func init() {
